@@ -141,6 +141,18 @@ python -m PyInstaller Subsetra.spec --noconfirm
 This produces a single self-contained `dist/Subsetra.exe` (with the bundled
 abacus icon and embedded version metadata from `version.txt`).
 
+## Excel-formula demo (no Python)
+
+`Subsetra_Lite.xlsx` is a formula-only demo: a single dynamic-array formula (no
+macros, no add-ins) solves the subset-sum problem directly in the spreadsheet.
+Open the **Solver** sheet, enter amounts in column A and a target in `C6`, and
+the matches appear automatically; the workbook's **README** sheet has the
+details.
+
+> Requires Excel 365 / 2021+ (it uses `LET`, `LAMBDA`, `FILTER`, …) and is meant
+> for short lists only, since it enumerates all `2^n` subsets. For larger lists,
+> use the app above.
+
 ## Testing
 
 ```bash
@@ -160,6 +172,7 @@ subset_sum_reconcile.py   # the engine + CLI (the core algorithm lives here)
 reconcile_gui.py          # Tkinter GUI (search, analysis window, Excel I/O)
 test_reconcile.py         # regression + fuzz test suite
 make_example.py           # generates example_reconcile.xlsx
+Subsetra_Lite.xlsx        # formula-only Excel demo (Excel 365, no Python)
 make_icon.py              # generates the abacus app icon (Pillow)
 Subsetra.spec             # PyInstaller build spec
 version.txt               # Windows version/metadata resource

@@ -99,7 +99,7 @@ def gen_positive():
     out = []
     for _ in range(n):
         v = round(random.uniform(0.01, 300), 2)
-        if random.random() < 0.5:              # ~half whole-shekel (rounded pool vs agora)
+        if random.random() < 0.5:              # ~half whole-unit (rounded pool vs fractional)
             v = float(int(v)) or 1.0
         out.append(v)
     return out
@@ -130,13 +130,13 @@ def tgt_zero(tx, k_max):
 # --------------------------------------------------------------------------- #
 #  Targeted (strategic) scenarios.
 # --------------------------------------------------------------------------- #
-def test_agorot_precision():
+def test_cents_precision():
     # 0.10 + 0.20 + 0.70 = 1.00  (classic floating-point inaccuracy trap)
     e, _ = engine_solutions([0.10, 0.20, 0.70, 0.55], 1.00, 4)
-    check("agorot precision 0.10+0.20+0.70", (70, 20, 10) in e)
+    check("cents precision 0.10+0.20+0.70", (70, 20, 10) in e)
     # 33.33 * 3 = 99.99
     e, _ = engine_solutions([33.33, 33.33, 33.33, 0.01], 99.99, 5)
-    check("agorot precision 33.33*3", (3333, 3333, 3333) in e)
+    check("cents precision 33.33*3", (3333, 3333, 3333) in e)
 
 
 def test_duplicates():
@@ -190,7 +190,7 @@ def test_super_increasing():
             vals.append(nxt)
             total += nxt
         if random.random() < 0.5:
-            vals = [v * 100 for v in vals]              # whole-shekel variant
+            vals = [v * 100 for v in vals]              # whole-unit variant
         k_max = random.randint(2, 8)
         size = random.randint(1, min(k_max, n))
         idx = random.sample(range(n), size)
@@ -205,7 +205,7 @@ def test_super_increasing():
 
 
 def test_powers_of_two_varied():
-    # 2^N varied: cents and whole-shekels, different subset sizes. Always unique.
+    # 2^N varied: cents and whole-units, different subset sizes. Always unique.
     random.seed(11)
     cases = 0
     for whole in (False, True):
@@ -228,7 +228,7 @@ def test_powers_of_two_varied():
     sols, _ = core.solve([b / 100 for b in base], sum(base) / 100, 10, 30)
     if [sorted(s, reverse=True) for s in sols] != [sorted(base, reverse=True)]:
         return check("2^N varied (full set)", False, "full-set case failed")
-    check(f"2^N varied (whole+agora, sizes, full-set; {cases + 1} cases)", True)
+    check(f"2^N varied (whole+fractional, sizes, full-set; {cases + 1} cases)", True)
 
 
 def test_target_zero_cancellation():
@@ -241,7 +241,7 @@ def test_target_zero_cancellation():
 def test_no_solution_short():
     # Short no-solution cases -- must be pruned immediately: 0 solutions, complete, fast.
     cases = [
-        ([10.0, 20.0, 30.0], 15.50, "agora target from whole-shekel values"),
+        ([10.0, 20.0, 30.0], 15.50, "fractional target from whole-unit values"),
         ([0.02, 0.04, 0.06], 0.05, "odd-cent target from even-cent values"),
         ([1.0, 2.0, 3.0], 100.0, "target above total sum"),
         ([10.0, 20.0, 30.0], 5.0, "target below every item"),
@@ -357,7 +357,7 @@ def run_deterministic():
     print("=" * 60)
 
     print("\n[1] Brute-force comparison (exhaustive search):")
-    run_bruteforce("positive (mixed round/agora)", gen_positive,
+    run_bruteforce("positive (mixed round/fractional)", gen_positive,
                    tgt_from_subset, 1200, seed=1)
     run_bruteforce("mixed-sign (credits/debits)", gen_mixed,
                    tgt_from_subset_any, 1000, seed=2)
@@ -365,7 +365,7 @@ def run_deterministic():
                    tgt_zero, 1000, seed=3)
 
     print("\n[2] Targeted scenarios:")
-    test_agorot_precision()
+    test_cents_precision()
     test_duplicates()
     test_shortest_first()
     test_max_results_cap()
@@ -591,7 +591,7 @@ def fc_same_cents():
     return (tx, t, k) if t else None
 
 
-def fc_tiny_agorot():
+def fc_tiny_cents():
     tx = [round(random.uniform(0.01, 0.99), 2) for _ in range(random.randint(5, 12))]
     k = random.randint(2, 6)
     t = _subset_target(tx, k)
@@ -686,7 +686,7 @@ def fl_large():
 _FUZZ_GENS = (
     [fc_positive_small] * 10 + [fc_positive_large] * 5 + [fc_mixed_sign] * 8 +
     [fc_target_zero] * 6 + [fc_big_rounded_pool] * 6 + [fc_near_equal] * 5 +
-    [fc_same_cents] * 4 + [fc_tiny_agorot] * 4 + [fc_duplicates_heavy] * 4 +
+    [fc_same_cents] * 4 + [fc_tiny_cents] * 4 + [fc_duplicates_heavy] * 4 +
     [fc_super_increasing] * 4 + [fc_powers_two] * 4 +
     [fe_single_item] * 2 + [fe_full_set] * 2 + [fe_no_solution] * 3 +
     [fe_min_items] * 2 + [fe_extreme] * 2 + [fe_negative_target] * 2 +

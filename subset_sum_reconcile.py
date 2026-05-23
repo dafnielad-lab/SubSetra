@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Accounting reconciliation tool — Subset Sum with aggressive pruning.
+Accounting reconciliation tool — Subset Sum with branch-and-bound pruning.
 
 Reads an Excel file (sheet 'Input') containing a list of transactions and a
 target sum, and finds up to 10 subsets of transactions whose sum equals the
 target exactly. The shortest solutions are returned first. The output is
 written to the 'Output' sheet in the same file.
 
-All computation is done on integer cents (shekels * 100) to avoid
+All computation is done on integer cents (value * 100) to avoid
 floating-point rounding errors — critical in an accounting context.
 
-The strategy: split the problem into a cents problem and a shekels problem.
+The strategy: split the problem into a cents problem and a whole-unit problem.
   • "Round" transactions (0 cents) do not contribute to the cents part of the sum.
   • Therefore the cents part must be covered by *only* the non-round transactions.
   • Step 1: find subsets of the non-round transactions whose cents sum ≡ the
            target cents (mod 100). These are the "candidates".
-  • Step 2: for each candidate, complete the remainder (always a whole shekel
+  • Step 2: for each candidate, complete the remainder (always a whole-unit
            amount) using a standard subset-sum search over the round transactions only.
 
 Usage:
@@ -67,7 +67,7 @@ class _StopSearch(Exception):
 
 
 def to_cents(value):
-    """Convert a shekel value (float) to an integer number of cents."""
+    """Convert a value (float) to an integer number of cents (minor units)."""
     return int(round(float(value) * 100))
 
 
@@ -130,7 +130,7 @@ class SearchState:
 def read_input(filepath):
     """
     Reads the 'Input' sheet.
-    Returns (transactions, target, k_max) — values in shekels (float), k_max as an integer.
+    Returns (transactions, target, k_max) — monetary values (float), k_max as an integer.
     """
     if not os.path.isfile(filepath):
         raise SystemExit(f"ERROR: file not found: {filepath}")
@@ -236,7 +236,7 @@ def find_modular_candidates(non_rounded, target_cents, exact_len, state, lo, hi)
     complete exactly `needed` round transactions, so the candidate's sum must be between
     target - (sum of the `needed` largest round values) and target - (sum of the `needed` smallest).
     At each node we prune if the range is no longer reachable given the m remaining items
-    to pick (the m largest / m smallest). This prunes aggressively even when the round pool is large.
+    to pick (the m largest / m smallest). This prunes well even when the round pool is large.
     """
     if exact_len == 0:                              # the empty set (sum 0)
         if target_cents == 0 and lo <= 0 <= hi:
@@ -279,7 +279,7 @@ def find_modular_candidates(non_rounded, target_cents, exact_len, state, lo, hi)
 
 
 # --------------------------------------------------------------------------- #
-#  Subset-sum search with pruning (used to complete the shekels from the round pool).
+#  Subset-sum search with pruning (completes the whole-unit amount from the round pool).
 # --------------------------------------------------------------------------- #
 def find_subset_sum(values, target, max_len, state, exact_len=None, limit=None,
                     prefix=None):
@@ -502,7 +502,7 @@ def solve(transactions, target, k_max, max_seconds,
                     else:
                         if rem == 0:
                             continue
-                        assert rem % 100 == 0, "Remainder is not a whole shekel — bug in the cents split!"
+                        assert rem % 100 == 0, "Remainder is not a whole unit — bug in the cents split!"
                         limit = state.max_solutions - len(state.solutions)
                         comps = find_subset_sum(rounded, rem, needed, state,
                                                 exact_len=needed, limit=limit,
@@ -727,7 +727,7 @@ def _ask_minutes(default=5.0):
 def main():
     _reconfig_stdout()
     parser = argparse.ArgumentParser(
-        description="Accounting reconciliation tool (Subset Sum with aggressive pruning)")
+        description="Accounting reconciliation tool (Subset Sum with branch-and-bound pruning)")
     parser.add_argument("filepath", help="path to the Excel file with an 'Input' sheet")
     parser.add_argument("--minutes", type=float, default=None,
                         help="time limit in minutes (0=no limit). If omitted — you'll be asked at runtime.")

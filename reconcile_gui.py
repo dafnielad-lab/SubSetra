@@ -82,7 +82,7 @@ def pick_font():
 
 
 def _fmt_money(cents):
-    """Format a single cent value as a signed shekel string, e.g. -1,250.30."""
+    """Format a single cent value as a signed amount string, e.g. -1,250.30."""
     sign = "-" if cents < 0 else ""
     return f"{sign}{abs(cents) / 100:,.2f}"
 

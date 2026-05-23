@@ -18,6 +18,9 @@ fuzz_failures.jsonl
 reconciliation.xlsx
 ~$*.xlsx
 
+# Generated icon preview (subsetra_icon.ico is the committed asset)
+subsetra_icon.png
+
 # OS / editor
 .DS_Store
 Thumbs.db

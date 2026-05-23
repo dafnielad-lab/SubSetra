@@ -1,0 +1,9 @@
+# Runtime dependencies
+openpyxl>=3.1      # Excel (.xlsx) reading/writing
+Pillow>=9.3        # only needed to (re)generate the app icon via make_icon.py
+
+# Tkinter (the GUI toolkit) is part of the Python standard library and ships
+# with the official CPython installer — it is not installed via pip.
+
+# Optional, for building the standalone Windows executable:
+#   pip install pyinstaller

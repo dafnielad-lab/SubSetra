@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.manifest
+
+# Test/runtime artifacts
+test_log.json
+fuzz_failures.jsonl
+
+# Generated / scratch Excel output (keep the curated example)
+reconciliation.xlsx
+~$*.xlsx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -13,8 +13,8 @@ reconciliation**: you have a pile of transactions and a known total (a bank
 line, an invoice, a statement balance), and you need to know *which*
 transactions make up that total. That is the classic
 [Subset Sum problem](https://en.wikipedia.org/wiki/Subset_sum_problem) — NP-hard
-in general — and Subsetra solves real-world instances of it quickly using exact
-integer arithmetic and an aggressive branch-and-bound search.
+in general. Subsetra handles practical instances of it using exact integer
+arithmetic and a branch-and-bound search.
 
 <p align="center">
   <img src="docs/screenshot-main.png" width="780" alt="Subsetra main window">
@@ -24,33 +24,32 @@ integer arithmetic and an aggressive branch-and-bound search.
 
 ## Why it exists
 
-A spreadsheet that enumerates every subset (`2^n`) dies around ~24 transactions.
-Subsetra is designed to stay usable at **50–200+** transactions by combining a
-cents/shekel decomposition with length-aware pruning, so it explores a tiny
-fraction of the search space. It is **shortest-first** (it returns the
-smallest-cardinality matches first) and it **never hangs**: there is a time
-limit, a result cap, and `Ctrl+C` / a Stop button — whatever has been found so
-far is always returned and saved.
+A spreadsheet that enumerates every subset (`2^n`) becomes impractical around
+~24 transactions. Subsetra aims to stay usable at larger sizes (roughly 50–200
+transactions) by combining a cents/whole-unit decomposition with length-aware
+pruning, so it explores only part of the search space. It returns the shortest
+matches first, and it is bounded: a time limit, a result cap, and `Ctrl+C` / a
+Stop button mean it always returns whatever it has found so far.
 
 ## Features
 
 - **Exact, to-the-cent matching.** All arithmetic is done in integer *cents*,
   never floats, so accounting amounts are never mis-summed by rounding.
-- **Scales past the spreadsheet wall.** Handles long transaction lists by
-  decomposing the problem into a cents subproblem and a whole-unit subproblem
-  (see [`DESIGN.md`](DESIGN.md)).
+- **Handles longer lists.** Decomposes the problem into a cents subproblem and
+  a whole-unit subproblem (see [`DESIGN.md`](DESIGN.md)).
 - **Shortest solutions first**, up to a configurable result cap.
 - **Negatives and zero targets supported** — credits/refunds, and finding
   entries that cancel out (e.g. `+500` and `−500`).
-- **Excel in, Excel out.** Reads a styled `Input` sheet, writes a styled
-  `Output` sheet. Or skip Excel entirely with the built-in **manual entry**.
-- **Results-analysis window** to narrow many matches down to the real one:
+- **Excel in, Excel out.** Reads an `Input` sheet, writes a formatted `Output`
+  sheet. Or skip Excel with the built-in **manual entry**.
+- **Results-analysis window** to help narrow many matches toward the right one:
   rule out / confirm individual values and watch the candidate set shrink, with
-  each step appended as its own audit sheet in the workbook.
-- **Won't freeze.** Worker-thread search, choosable time limit, Stop button.
-- **Tested hard.** A regression suite plus a fuzzer that checks results against
-  a brute-force oracle and keeps a growing corpus of past failures as permanent
-  regressions.
+  each step appended as its own sheet in the workbook.
+- **Stays responsive.** The search runs on a worker thread, with a time limit
+  and a Stop button.
+- **Tested.** A regression suite plus a fuzzer that checks results against a
+  brute-force oracle and keeps a corpus of past failures as permanent
+  regression cases.
 
 ## Screenshots
 
@@ -119,11 +118,11 @@ The short version: amounts are converted to integer cents; transactions are
 split into *round* (whole-unit) and *non-round* (have cents) groups; the search
 first solves the **cents subproblem** modulo 100 on the non-round group, then
 completes each candidate with round transactions; the whole thing runs as an
-**iterative-deepening, branch-and-bound DFS** with tight two-sided bounds so it
-returns the shortest solutions first and prunes aggressively.
+**iterative-deepening, branch-and-bound DFS** with two-sided bounds, so it
+returns the shortest solutions first and prunes the search early.
 
-The full walkthrough — with the reasoning behind every pruning rule — is in
-**[`DESIGN.md`](DESIGN.md)**. It is written to be read for learning/practice.
+The full walkthrough — with the reasoning behind each pruning rule — is in
+**[`DESIGN.md`](DESIGN.md)**, written to be read for learning.
 
 > Amounts are treated as generic values with up to two decimal places, and are
 > handled internally as integer **minor units** (cents). The tool is
@@ -170,5 +169,4 @@ DESIGN.md                 # algorithm deep-dive
 
 ## License
 
-[MIT](LICENSE) © 2026 Elad Dafni. Use it, learn from it, fork it — feedback
-welcome.
+[MIT](LICENSE) © 2026 Elad Dafni. Feedback and suggestions are welcome.

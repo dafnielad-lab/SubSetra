@@ -33,7 +33,7 @@ Two requirements shape everything:
   in a solution, so it's dropped. Zero values are removed.
 - **Split by cents.** Each amount is classified as **round** (a whole currency
   unit — `c % 100 == 0`, e.g. `400.00`) or **non-round** (it has cents, e.g.
-  `250.20`). This split is the key idea — see §4.
+  `250.20`). This split is what §4 builds on.
 - **Sort descending.** Both groups are sorted high-to-low, which makes the
   bounds in §5 tight and lets the DFS prune early.
 
@@ -47,14 +47,14 @@ solve(transactions, target, k_max, max_seconds, …)
    └─ otherwise (all positive)            ──▶  cents decomposition  (§4,§5)
 ```
 
-The positive all-positive case is the common one and gets the fast
-cents-decomposition path. Anything with negatives (credits/refunds) or a
+The all-positive case is the common one and uses the cents-decomposition
+path. Anything with negatives (credits/refunds) or a
 non-positive target (e.g. finding entries that cancel to **zero**) goes to a
 unified, still-pruned, general DFS.
 
 ---
 
-## 4. The cents / whole-unit decomposition (the core trick)
+## 4. The cents / whole-unit decomposition
 
 Look at the target's **cents digit**, `target mod 100`. Round transactions
 contribute `0 mod 100`. So **only the non-round transactions can supply the
@@ -81,7 +81,7 @@ solution on its own.
 
 ---
 
-## 5. Length-aware two-sided bounds (the pruning that makes it fast)
+## 5. Length-aware two-sided bounds
 
 Both stages prune with **prefix sums** of the sorted groups. If you still need
 exactly `m` more items from a descending-sorted pool, then whatever you pick has
@@ -101,11 +101,11 @@ into the cents stage. Because the leftover will be completed by *exactly*
 [ target − sum(needed largest round) ,  target − sum(needed smallest round) ]
 ```
 
-Restricting candidate sums to this window (instead of a loose
-`target − sum(all round)`) was measured to cut ~4× the branches and hold ~80×
-fewer candidates in memory on a mixed test. Each `(K, c)` pair maps to a unique
-`needed`, so the window is computed once per pair from `prefix_round` and handed
-in — no candidate cache is required.
+Restricting candidate sums to this window (instead of a looser
+`target − sum(all round)`) reduces both the branches explored and the number of
+candidates held in memory. Each `(K, c)` pair maps to a unique `needed`, so the
+window is computed once per pair from `prefix_round` and handed in — no
+candidate cache is required.
 
 ---
 
